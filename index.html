@@ -795,6 +795,22 @@
   .badge.user { background: rgba(45,106,79,.12); color: var(--success); }
   .badge.nonuser { background: rgba(139,44,44,.10); color: var(--error); }
 
+  .row-delete-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--ink-mute);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .15s;
+  }
+  .row-delete-btn:hover {
+    background: rgba(139,44,44,.08);
+    color: var(--error);
+    border-color: rgba(139,44,44,.2);
+  }
+
   /* Distribution bar */
   .dist-row {
     display: grid;
@@ -1409,7 +1425,7 @@
       <div class="pin-card">
         <h3>Acceso administrador</h3>
         <p>Ingresa el PIN para ver el repositorio de respuestas y el análisis automático.</p>
-        <input type="password" class="pin-input" id="pin-input" maxlength="6" placeholder="••••" autofocus>
+        <input type="password" class="pin-input" id="pin-input" maxlength="20" placeholder="••••••••" autofocus>
         <div class="pin-error" id="pin-error"></div>
         <div style="display:flex; gap:10px; margin-top:18px; justify-content:center;">
           <button class="btn btn-ghost" onclick="closeAdmin()">Cancelar</button>
@@ -1491,7 +1507,10 @@
             <div class="detail-id" id="detail-id"></div>
             <div class="detail-flow-badge" id="detail-flow-badge"></div>
           </div>
-          <button class="admin-close" onclick="closeDetailModal()">Cerrar</button>
+          <div style="display:flex; gap:8px;">
+            <button class="admin-close" onclick="deleteFromModal()" style="color:var(--error); border-color:rgba(139,44,44,.3);" title="Borrar esta respuesta">🗑 Borrar</button>
+            <button class="admin-close" onclick="closeDetailModal()">Cerrar</button>
+          </div>
         </div>
         <div class="detail-body" id="detail-body"></div>
       </div>
@@ -1548,6 +1567,11 @@ async function fbDeleteAll() {
   const batch = db.batch();
   snapshot.docs.forEach(doc => batch.delete(doc.ref));
   await batch.commit();
+}
+
+async function fbDeleteOne(id) {
+  if (!firebaseReady) throw new Error('Firebase no está inicializado');
+  await db.collection(COLLECTION_NAME).doc(id).delete();
 }
 
 // ============================================================
@@ -2024,24 +2048,37 @@ function renderTable(data) {
   }
   let html = `<thead><tr>
     <th>ID</th><th>Fecha</th><th>Nivel</th><th>Años MELI</th><th>Años Tes.</th>
-    <th>Conoc.</th><th>Filtro</th><th>¿Usa IA?</th>
+    <th>Conoc.</th><th>Filtro</th><th>¿Usa IA?</th><th></th>
   </tr></thead><tbody>`;
   data.slice().reverse().forEach(d => {
     const date = new Date(d.timestamp).toLocaleDateString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     const flowLabel = d.flow === 'user' ? '✓ Sí' : '✗ No';
-    html += `<tr onclick="showResponseDetail('${d.id}')" style="cursor:pointer">
-      <td><strong>${d.id}</strong></td>
-      <td>${date}</td>
-      <td>${d.level}</td>
-      <td>${d.years_meli}</td>
-      <td>${d.years_treasury}</td>
-      <td>${d.knowledge_rank}/5</td>
-      <td>${d.filter_answer}</td>
-      <td><span class="badge ${d.flow}">${flowLabel}</span></td>
+    html += `<tr style="cursor:pointer">
+      <td onclick="showResponseDetail('${d.id}')"><strong>${d.id}</strong></td>
+      <td onclick="showResponseDetail('${d.id}')">${date}</td>
+      <td onclick="showResponseDetail('${d.id}')">${d.level}</td>
+      <td onclick="showResponseDetail('${d.id}')">${d.years_meli}</td>
+      <td onclick="showResponseDetail('${d.id}')">${d.years_treasury}</td>
+      <td onclick="showResponseDetail('${d.id}')">${d.knowledge_rank}/5</td>
+      <td onclick="showResponseDetail('${d.id}')">${d.filter_answer}</td>
+      <td onclick="showResponseDetail('${d.id}')"><span class="badge ${d.flow}">${flowLabel}</span></td>
+      <td><button class="row-delete-btn" onclick="event.stopPropagation(); confirmDeleteOne('${d.id}')" title="Borrar esta respuesta">🗑</button></td>
     </tr>`;
   });
   html += '</tbody>';
   table.innerHTML = html;
+}
+
+async function confirmDeleteOne(id) {
+  if (!confirm(`¿Borrar la respuesta ${id}? Esta acción NO se puede deshacer.`)) return;
+  try {
+    await fbDeleteOne(id);
+    showToast(`Respuesta ${id} eliminada`);
+    loadDashboard();
+  } catch (e) {
+    console.error(e);
+    showToast('Error al borrar: ' + e.message);
+  }
 }
 
 async function showResponseDetail(id) {
@@ -2105,6 +2142,21 @@ async function showResponseDetail(id) {
 
 function closeDetailModal() {
   document.getElementById('detail-modal').classList.remove('active');
+}
+
+async function deleteFromModal() {
+  const id = document.getElementById('detail-id').textContent;
+  if (!id) return;
+  if (!confirm(`¿Borrar la respuesta ${id}? Esta acción NO se puede deshacer.`)) return;
+  try {
+    await fbDeleteOne(id);
+    showToast(`Respuesta ${id} eliminada`);
+    closeDetailModal();
+    loadDashboard();
+  } catch (e) {
+    console.error(e);
+    showToast('Error al borrar: ' + e.message);
+  }
 }
 
 // Close modal on escape or backdrop click
