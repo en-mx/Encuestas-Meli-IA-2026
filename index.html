@@ -351,7 +351,13 @@
     color: var(--ink-soft);
     margin-bottom: 16px;
     font-style: italic;
+    line-height: 1.55;
+    padding: 12px 14px;
+    background: rgba(31,59,115,.04);
+    border-left: 2px solid var(--accent-deep);
+    border-radius: 4px;
   }
+  .q-help strong { color: var(--ink); font-style: normal; font-weight: 600; }
 
   /* ==================== INPUTS ==================== */
   .input-row {
@@ -1328,7 +1334,8 @@
     <!-- Filter question -->
     <div class="q-card">
       <div class="q-tag required">Pregunta filtro <span class="req-mark">*</span></div>
-      <div class="q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude / Gemini) en tu área durante el último mes?</div>
+      <div class="q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude, Gemini, ChatGPT) en tu trabajo durante el último mes?</div>
+      <div class="q-help">Por IA generativa nos referimos a herramientas que <strong>generan contenido nuevo a partir de un prompt</strong>: redactar textos, construir fórmulas o código, generar análisis, sintetizar información, crear modelos o resolver problemas estructurados. Incluye cualquier salida creada por la IA — aunque después la pegues en Excel, Word, o cualquier otra herramienta.</div>
       <div class="options">
         <label class="option">
           <input type="radio" name="q_filter" value="A" data-flow="nonuser">
@@ -1340,11 +1347,15 @@
         </label>
         <label class="option">
           <input type="radio" name="q_filter" value="C" data-flow="user">
-          <span class="option-label"><span class="option-letter">C</span><span>Las uso ocasionalmente (1-2 veces al mes)</span></span>
+          <span class="option-label"><span class="option-letter">C</span><span><strong>1–3 veces al mes</strong> (uso esporádico)</span></span>
         </label>
         <label class="option">
           <input type="radio" name="q_filter" value="D" data-flow="user">
-          <span class="option-label"><span class="option-letter">D</span><span>Las uso regularmente (al menos una vez por semana)</span></span>
+          <span class="option-label"><span class="option-letter">D</span><span><strong>1–3 veces por semana</strong> (uso frecuente)</span></span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q_filter" value="E" data-flow="user">
+          <span class="option-label"><span class="option-letter">E</span><span><strong>4 o más veces por semana</strong>, incluyendo uso diario (uso intensivo)</span></span>
         </label>
       </div>
     </div>
@@ -1997,14 +2008,15 @@ function renderDistributions(data) {
   });
 
   // By filter answer
-  const byFilter = { A: 0, B: 0, C: 0, D: 0 };
+  const byFilter = { A: 0, B: 0, C: 0, D: 0, E: 0 };
   data.forEach(d => { if (d.filter_answer) byFilter[d.filter_answer]++; });
   html += '<div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); margin:18px 0 10px;">Frecuencia de uso reportada</div>';
   const filterLabels = {
     A: '✗ Nunca las ha usado',
     B: '✗ Intentó pero no logró aplicarlas',
-    C: '✓ Uso ocasional (1-2/mes)',
-    D: '✓ Uso regular (semanal+)'
+    C: '✓ Esporádico (1–3/mes)',
+    D: '✓ Frecuente (1–3/semana)',
+    E: '✓ Intensivo (4+/semana, diario)'
   };
   Object.entries(byFilter).forEach(([k, v]) => {
     const pct = data.length > 0 ? Math.round((v / data.length) * 100) : 0;
@@ -2110,14 +2122,15 @@ async function showResponseDetail(id) {
   // Filter question
   const filterLabels = {
     A: 'Nunca las he usado',
-    B: 'Las he intentado usar pero no logré aplicarlas',
-    C: 'Las uso ocasionalmente (1-2 veces al mes)',
-    D: 'Las uso regularmente (al menos una vez por semana)'
+    B: 'Las he intentado usar pero no logré aplicarlas a mi trabajo concreto',
+    C: '1–3 veces al mes (uso esporádico)',
+    D: '1–3 veces por semana (uso frecuente)',
+    E: '4 o más veces por semana, incluyendo uso diario (uso intensivo)'
   };
   html += `<div class="detail-section">
     <h4>Pregunta filtro · Frecuencia de uso</h4>
     <div class="detail-q">
-      <div class="detail-q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude/Gemini) durante el último mes?</div>
+      <div class="detail-q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude, Gemini, ChatGPT) en tu trabajo durante el último mes?</div>
       <div class="detail-q-answer">(${r.filter_answer}) ${filterLabels[r.filter_answer]}</div>
     </div>
   </div>`;
