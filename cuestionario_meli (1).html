@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Adopción de IA · Tesorería · MercadoLibre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase compat (síncrono, funciona en GitHub Pages) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<style>
+  :root {
+    --bg: #f7f5ee;
+    --bg-card: #ffffff;
+    --ink: #14213d;
+    --ink-soft: #4a5572;
+    --ink-mute: #8892a8;
+    --line: #e8e4d6;
+    --line-soft: #f0ede2;
+    --accent: #ffe600;
+    --accent-deep: #1f3b73;
+    --accent-warm: #c8b06b;
+    --success: #2d6a4f;
+    --error: #8b2c2c;
+    --shadow-sm: 0 1px 2px rgba(20,33,61,.04), 0 2px 4px rgba(20,33,61,.04);
+    --shadow-md: 0 4px 12px rgba(20,33,61,.06), 0 12px 32px rgba(20,33,61,.06);
+    --shadow-lg: 0 12px 36px rgba(20,33,61,.08), 0 24px 64px rgba(20,33,61,.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    background:
+      radial-gradient(at 8% 4%, rgba(255,230,0,.16) 0px, transparent 42%),
+      radial-gradient(at 95% 95%, rgba(31,59,115,.08) 0px, transparent 50%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  .wrapper {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ==================== HEADER ==================== */
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 38px; height: 38px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 17px;
+    box-shadow: 0 2px 8px rgba(255,230,0,.4);
+  }
+  .brand-text {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    letter-spacing: .015em;
+    line-height: 1.4;
+  }
+  .brand-text strong { color: var(--ink); font-weight: 600; }
+  .brand-text .sub { color: var(--ink-mute); font-size: 11px; }
+
+  .admin-link {
+    font-size: 11px;
+    color: var(--ink-mute);
+    text-decoration: none;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all .2s;
+    cursor: pointer;
+    background: none;
+    font-family: inherit;
+  }
+  .admin-link:hover {
+    color: var(--ink);
+    border-color: var(--line);
+  }
+
+  /* ==================== INTRO ==================== */
+  .intro h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(30px, 4.8vw, 44px);
+    line-height: 1.12;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  .intro h1 em {
+    font-style: italic;
+    color: var(--accent-deep);
+    font-weight: 500;
+  }
+  .intro .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-bottom: 28px;
+    max-width: 640px;
+  }
+  .intro-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    padding: 4px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .meta-item {
+    padding: 18px 22px;
+    border-right: 1px solid var(--line-soft);
+  }
+  .meta-item:last-child { border-right: none; }
+  @media (max-width: 600px) {
+    .meta-item { border-right: none; border-bottom: 1px solid var(--line-soft); }
+    .meta-item:last-child { border-bottom: none; }
+  }
+  .meta-item .label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-mute);
+    margin-bottom: 6px;
+  }
+  .meta-item .value {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .privacy-note {
+    background: rgba(255,230,0,.12);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-bottom: 36px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .privacy-note strong { color: var(--ink); font-weight: 600; }
+
+  /* ==================== CONSENT BOX ==================== */
+  .consent-box {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 26px 22px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .consent-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--accent-deep);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .consent-p {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .consent-p strong { color: var(--ink); font-weight: 600; }
+  .consent-p:last-of-type { margin-bottom: 18px; }
+  .consent-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255,230,0,.10);
+    border: 1px solid rgba(255,230,0,.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    margin-top: 6px;
+  }
+  .consent-check:hover {
+    background: rgba(255,230,0,.18);
+    border-color: var(--accent);
+  }
+  .consent-check input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--accent-deep);
+  }
+  .consent-check-label {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  /* ==================== STAGES ==================== */
+  .stage {
+    display: none;
+    animation: fadeUp .5s ease;
+  }
+  .stage.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-rail {
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+    border-radius: 2px;
+    width: 0%;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* ==================== SECTION HEADERS ==================== */
+  .section-head {
+    margin-bottom: 24px;
+  }
+  .section-num {
+    font-family: 'Fraunces', serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent-deep);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  /* ==================== QUESTIONS ==================== */
+  .q-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-sm);
+    transition: all .25s;
+  }
+  .q-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: #ddd9ca;
+  }
+  .q-card.answered {
+    background: linear-gradient(0deg, var(--bg-card) 0%, #fbfaf3 100%);
+  }
+
+  .q-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 10px;
+  }
+  .q-tag.required::after {
+    content: '·';
+    margin: 0 6px;
+    color: var(--line);
+  }
+  .q-tag .req-mark {
+    color: var(--error);
+    font-weight: 700;
+  }
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 18px;
+    letter-spacing: -0.005em;
+  }
+  .q-help {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  /* ==================== INPUTS ==================== */
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 540px) {
+    .input-row { grid-template-columns: 1fr; }
+  }
+  .input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .input-field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+    color: var(--ink);
+    background: #fdfcf7;
+    transition: all .2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-deep);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(31,59,115,.08);
+  }
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.55;
+  }
+
+  /* ==================== RADIO OPTIONS ==================== */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option {
+    position: relative;
+    cursor: pointer;
+  }
+  .option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .option-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fdfcf7;
+    transition: all .18s;
+    font-size: 14.5px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .option:hover .option-label {
+    border-color: #c5bfac;
+    background: #fff;
+  }
+  .option input:checked + .option-label {
+    border-color: var(--accent-deep);
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--accent-deep), 0 4px 12px rgba(31,59,115,.10);
+  }
+  .option-letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border: 1.5px solid var(--line);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-mute);
+    background: #fff;
+    transition: all .18s;
+  }
+  .option input:checked + .option-label .option-letter {
+    border-color: var(--accent-deep);
+    background: var(--accent-deep);
+    color: var(--accent);
+  }
+
+  /* Likert scale 1-5 */
+  .likert {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .likert-option {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+  }
+  .likert-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .likert-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 6px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fdfcf7;
+    transition: all .18s;
+    text-align: center;
+  }
+  .likert-num {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .likert-cap {
+    font-size: 10px;
+    color: var(--ink-mute);
+    line-height: 1.2;
+    height: 24px;
+  }
+  .likert-option input:checked + .likert-label {
+    border-color: var(--accent-deep);
+    background: var(--accent-deep);
+  }
+  .likert-option input:checked + .likert-label .likert-num,
+  .likert-option input:checked + .likert-label .likert-cap {
+    color: var(--accent);
+  }
+  .likert-option:hover .likert-label {
+    border-color: #c5bfac;
+  }
+
+  /* Frequency selector */
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 540px) {
+    .freq-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ==================== BUTTONS ==================== */
+  .btn-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .btn {
+    padding: 13px 26px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .015em;
+    cursor: pointer;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    background: var(--accent-deep);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  .btn-primary:disabled {
+    background: var(--ink-mute);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover {
+    color: var(--ink);
+    border-color: var(--ink-mute);
+  }
+  .btn-accent {
+    background: var(--accent);
+    color: var(--ink);
+  }
+  .btn-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(255,230,0,.5);
+  }
+  .btn-arrow::after {
+    content: '→';
+    font-weight: 400;
+    font-size: 16px;
+    transition: transform .2s;
+  }
+  .btn-arrow:hover::after { transform: translateX(2px); }
+
+  /* ==================== CTA START ==================== */
+  .cta-start {
+    text-align: center;
+    padding: 28px 0 8px;
+  }
+
+  /* ==================== COMPLETE STAGE ==================== */
+  .complete {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .complete-mark {
+    width: 72px; height: 72px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    margin: 0 auto 28px;
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink);
+    box-shadow: 0 8px 24px rgba(255,230,0,.4);
+  }
+  .complete h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    letter-spacing: -0.02em;
+  }
+  .complete p {
+    color: var(--ink-soft);
+    max-width: 480px;
+    margin: 0 auto 28px;
+  }
+  .complete-id {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--ink-mute);
+    background: var(--bg-card);
+    padding: 10px 16px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    display: inline-block;
+  }
+
+  /* ==================== ADMIN ==================== */
+  .admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(247,245,238,.97);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    overflow-y: auto;
+    animation: fadeUp .3s ease;
+  }
+  .admin-overlay.active { display: block; }
+  .admin-wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  .admin-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-head h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .admin-head h2 em {
+    color: var(--accent-deep);
+    font-style: italic;
+  }
+  .admin-close {
+    background: none;
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .admin-close:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+  .pin-card {
+    max-width: 380px;
+    margin: 80px auto;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+  }
+  .pin-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .pin-card p {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .pin-input {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    letter-spacing: .4em;
+    padding: 14px;
+  }
+  .pin-error {
+    color: var(--error);
+    font-size: 12px;
+    margin-top: 10px;
+    height: 16px;
+  }
+
+  /* Dashboard cards */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .admin-section {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    margin-bottom: 20px;
+  }
+  .admin-section h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .admin-section .desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Response table */
+  .response-table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+    margin-top: 14px;
+  }
+  .response-table th, .response-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .response-table th {
+    background: var(--bg);
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .response-table tr:hover td { background: var(--bg); }
+  .response-table .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .badge.user { background: rgba(45,106,79,.12); color: var(--success); }
+  .badge.nonuser { background: rgba(139,44,44,.10); color: var(--error); }
+
+  /* Distribution bar */
+  .dist-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 50px;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+  }
+  .dist-bar {
+    height: 8px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dist-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+    border-radius: 4px;
+    transition: width .6s ease;
+  }
+  .dist-count {
+    text-align: right;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ai-output {
+    background: linear-gradient(180deg, #fffef0 0%, #fdfcf7 100%);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .info-tip {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: rgba(31,59,115,.05);
+    border-left: 3px solid var(--accent-deep);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .info-tip strong { color: var(--ink); font-weight: 600; }
+  .info-tip em { color: var(--accent-deep); font-style: italic; }
+  .ai-output h1, .ai-output h2, .ai-output h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    margin: 18px 0 8px;
+    color: var(--accent-deep);
+  }
+  .ai-output h1 { font-size: 20px; }
+  .ai-output h2 { font-size: 17px; }
+  .ai-output h3 { font-size: 15px; }
+  .ai-output strong { color: var(--ink); font-weight: 600; }
+  .ai-output ul, .ai-output ol { margin: 8px 0 8px 24px; }
+  .ai-output li { margin-bottom: 4px; }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent-deep);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    transition: transform .3s ease;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .error-banner {
+    background: rgba(139,44,44,.08);
+    border-left: 3px solid var(--error);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--error);
+    display: none;
+  }
+  .error-banner.visible { display: block; }
+
+  /* ==================== VS GRID (Users vs Non-users) ==================== */
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .vs-grid { grid-template-columns: 1fr; }
+  }
+  .vs-col {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .vs-col.users-col { border-color: rgba(45,106,79,.3); }
+  .vs-col.nonusers-col { border-color: rgba(139,44,44,.25); }
+  .vs-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .015em;
+  }
+  .users-col .vs-header {
+    background: rgba(45,106,79,.08);
+    color: var(--success);
+    border-bottom: 1px solid rgba(45,106,79,.15);
+  }
+  .nonusers-col .vs-header {
+    background: rgba(139,44,44,.06);
+    color: var(--error);
+    border-bottom: 1px solid rgba(139,44,44,.12);
+  }
+  .vs-header .vs-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .vs-header .vs-icon::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .vs-count {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .vs-list {
+    padding: 8px 8px 12px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .vs-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .vs-item:hover { background: var(--bg); }
+  .vs-item .vs-id {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .vs-item .vs-meta {
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .vs-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+
+  /* ==================== FILTER BAR ==================== */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 14px 0 18px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-mute);
+    margin-right: 4px;
+  }
+  .filter-chip {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .filter-chip:hover {
+    border-color: var(--ink-soft);
+    color: var(--ink);
+  }
+  .filter-chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  /* ==================== DETAIL MODAL ==================== */
+  .detail-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,33,61,.4);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 40px 20px;
+    animation: fadeUp .25s ease;
+  }
+  .detail-modal.active { display: block; }
+  .detail-card {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .detail-head {
+    padding: 20px 26px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .detail-id {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .detail-flow-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .detail-flow-badge.user { background: rgba(45,106,79,.12); color: var(--success); }
+  .detail-flow-badge.nonuser { background: rgba(139,44,44,.10); color: var(--error); }
+  .detail-body {
+    padding: 24px 26px 32px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .detail-section {
+    margin-bottom: 24px;
+  }
+  .detail-section h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent-deep);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-q {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+  }
+  .detail-q-text {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .detail-q-answer {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .detail-q-answer.qual {
+    font-weight: 400;
+    font-style: italic;
+    padding-left: 10px;
+    border-left: 2px solid var(--accent);
+  }
+  .detail-q-answer.empty {
+    color: var(--ink-mute);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12.5px;
+  }
+  .detail-followup {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(255,230,0,.12);
+    border-left: 2px solid var(--accent);
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .detail-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .detail-meta-item .label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--ink-mute);
+    margin-bottom: 3px;
+  }
+  .detail-meta-item .value {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+                    PUBLIC QUESTIONNAIRE
+============================================================ -->
+<div class="wrapper" id="public-view">
+
+  <header class="brand">
+    <div class="brand-left">
+      <div class="brand-mark">M</div>
+      <div class="brand-text">
+        <strong>MercadoLibre · Tesorería</strong>
+        <div class="sub">Diagnóstico organizacional · EGADE Business School</div>
+      </div>
+    </div>
+    <button class="admin-link" onclick="openAdminPin()">Admin</button>
+  </header>
+
+  <!-- ===================== STAGE 0 · INTRO + CONSENT ===================== -->
+  <div class="stage active" id="stage-intro">
+    <div class="intro">
+      <h1>Diagnóstico de adopción de <em>IA generativa</em> en el equipo de Tesorería</h1>
+      <p class="lede">Este cuestionario forma parte de un estudio <strong>estrictamente académico</strong> realizado en el marco del MBA de EGADE Business School. Su objetivo es entender, desde una perspectiva de comportamiento organizacional, cómo los equipos financieros se relacionan con las herramientas de IA generativa.</p>
+
+      <div class="intro-meta">
+        <div class="meta-item">
+          <div class="label">Duración</div>
+          <div class="value">5–7 minutos</div>
+        </div>
+        <div class="meta-item">
+          <div class="label">Anonimato</div>
+          <div class="value">Total</div>
+        </div>
+        <div class="meta-item">
+          <div class="label">Preguntas</div>
+          <div class="value">10</div>
+        </div>
+      </div>
+
+      <div class="consent-box">
+        <h3 class="consent-title">Aviso de consentimiento informado</h3>
+
+        <p class="consent-p"><strong>Naturaleza del estudio.</strong> Este es un proyecto académico desarrollado por estudiantes de la Maestría en Administración de Empresas de EGADE Business School (Tecnológico de Monterrey), como parte de la asignatura de Comportamiento Organizacional. <strong>No es una evaluación de desempeño, no es una iniciativa corporativa de MercadoLibre, y no tendrá implicaciones laborales de ningún tipo.</strong></p>
+
+        <p class="consent-p"><strong>Datos que se recolectan.</strong> El cuestionario solicita únicamente: años de experiencia en MercadoLibre, años en funciones de Tesorería, nivel jerárquico genérico (Analista / Senior / Manager), tu auto-percepción sobre conocimiento de IA, y respuestas de opción múltiple sobre tu relación con estas herramientas. <strong>No se recolecta tu nombre, correo, número de empleado, ni cualquier dato que permita identificarte personalmente.</strong></p>
+
+        <p class="consent-p"><strong>Uso de la información.</strong> Los datos serán analizados de forma agregada y anonimizada exclusivamente para el reporte académico. Los hallazgos podrán ser presentados ante profesores y compañeros de la maestría, pero <strong>nunca se compartirán respuestas individuales con MercadoLibre, con tu jefe directo, ni con ninguna otra parte</strong>. Al concluir la materia (diciembre 2026), los datos crudos serán destruidos.</p>
+
+        <p class="consent-p"><strong>Voluntariedad.</strong> Tu participación es completamente voluntaria. Puedes cerrar esta ventana en cualquier momento sin necesidad de explicación. Si decides no participar, no habrá ninguna consecuencia.</p>
+
+        <p class="consent-p"><strong>Limitación de responsabilidad.</strong> Este instrumento se entrega "tal cual" para fines académicos. La información proporcionada por los participantes representa percepciones individuales que no constituyen posición oficial de MercadoLibre ni de sus directivos. Los autores no asumen responsabilidad por interpretaciones, decisiones o consecuencias derivadas del uso de esta información fuera del contexto académico para el que fue diseñada.</p>
+
+        <p class="consent-p"><strong>Contacto.</strong> Si tienes dudas sobre el estudio, puedes escribir directamente al investigador responsable a través del canal por el que recibiste esta invitación.</p>
+
+        <label class="consent-check">
+          <input type="checkbox" id="consent-checkbox" onchange="updateConsentButton()">
+          <span class="consent-check-label">He leído y comprendo los términos del estudio. Acepto participar de forma voluntaria y entiendo que mis respuestas serán tratadas de forma anónima y exclusivamente para fines académicos.</span>
+        </label>
+      </div>
+
+      <div class="cta-start">
+        <button class="btn btn-primary btn-arrow" id="consent-continue-btn" onclick="goToStage('demo')" disabled>Acepto y continúo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STAGE 1 · DEMOGRAPHICS ===================== -->
+  <div class="stage" id="stage-demo">
+    <div class="progress-label">Paso 1 de 4 · Antes de empezar</div>
+    <div class="progress-rail"><div class="progress-fill" style="width:25%"></div></div>
+
+    <div class="section-head">
+      <div class="section-num">Sección 1</div>
+      <h2 class="section-title">Algunos datos para contextualizar</h2>
+      <p class="section-sub">Solo se usan en agregado para identificar patrones por seniority y rol.</p>
+    </div>
+
+    <div class="q-card">
+      <div class="q-tag required">Demográficos <span class="req-mark">*</span></div>
+      <div class="input-row">
+        <div class="input-field">
+          <label>Años trabajando en MercadoLibre</label>
+          <input type="number" min="0" max="40" id="d_years_meli" placeholder="Ej. 3">
+        </div>
+        <div class="input-field">
+          <label>Años en funciones de Tesorería (en MELI o antes)</label>
+          <input type="number" min="0" max="40" id="d_years_treasury" placeholder="Ej. 5">
+        </div>
+      </div>
+      <div class="input-field" style="margin-top:14px">
+        <label>Nivel jerárquico</label>
+        <div class="options" style="margin-top:6px">
+          <label class="option">
+            <input type="radio" name="d_level" value="Analista">
+            <span class="option-label"><span class="option-letter">A</span><span>Analista</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="d_level" value="Senior/Lead">
+            <span class="option-label"><span class="option-letter">B</span><span>Senior / Lead</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="d_level" value="Manager">
+            <span class="option-label"><span class="option-letter">C</span><span>Manager o superior</span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStage('intro')">← Volver</button>
+      <button class="btn btn-primary btn-arrow" onclick="validateDemo()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- ===================== STAGE 2 · FILTER + SELF-RANK ===================== -->
+  <div class="stage" id="stage-filter">
+    <div class="progress-label">Paso 2 de 4 · Apertura</div>
+    <div class="progress-rail"><div class="progress-fill" style="width:50%"></div></div>
+
+    <div class="section-head">
+      <div class="section-num">Sección 2</div>
+      <h2 class="section-title">Tu relación con la IA</h2>
+      <p class="section-sub">Dos preguntas iniciales que definen el resto del cuestionario.</p>
+    </div>
+
+    <!-- Self-rank knowledge -->
+    <div class="q-card">
+      <div class="q-tag required">Auto-evaluación <span class="req-mark">*</span></div>
+      <div class="q-text">Si tuvieras que rankear del 1 al 5 tu conocimiento sobre el uso de IA en finanzas, ¿cómo te describirías?</div>
+      <div class="likert">
+        <label class="likert-option">
+          <input type="radio" name="q_knowledge" value="1">
+          <span class="likert-label"><span class="likert-num">1</span><span class="likert-cap">Conozco poco o nada</span></span>
+        </label>
+        <label class="likert-option">
+          <input type="radio" name="q_knowledge" value="2">
+          <span class="likert-label"><span class="likert-num">2</span><span class="likert-cap">Básico</span></span>
+        </label>
+        <label class="likert-option">
+          <input type="radio" name="q_knowledge" value="3">
+          <span class="likert-label"><span class="likert-num">3</span><span class="likert-cap">Medio</span></span>
+        </label>
+        <label class="likert-option">
+          <input type="radio" name="q_knowledge" value="4">
+          <span class="likert-label"><span class="likert-num">4</span><span class="likert-cap">Avanzado</span></span>
+        </label>
+        <label class="likert-option">
+          <input type="radio" name="q_knowledge" value="5">
+          <span class="likert-label"><span class="likert-num">5</span><span class="likert-cap">Conozco mucho</span></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Filter question -->
+    <div class="q-card">
+      <div class="q-tag required">Pregunta filtro <span class="req-mark">*</span></div>
+      <div class="q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude / Gemini) en tu área durante el último mes?</div>
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="q_filter" value="A" data-flow="nonuser">
+          <span class="option-label"><span class="option-letter">A</span><span>Nunca las he usado</span></span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q_filter" value="B" data-flow="nonuser">
+          <span class="option-label"><span class="option-letter">B</span><span>Las he intentado usar pero no logré aplicarlas a mi trabajo concreto</span></span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q_filter" value="C" data-flow="user">
+          <span class="option-label"><span class="option-letter">C</span><span>Las uso ocasionalmente (1-2 veces al mes)</span></span>
+        </label>
+        <label class="option">
+          <input type="radio" name="q_filter" value="D" data-flow="user">
+          <span class="option-label"><span class="option-letter">D</span><span>Las uso regularmente (al menos una vez por semana)</span></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStage('demo')">← Volver</button>
+      <button class="btn btn-primary btn-arrow" onclick="validateFilter()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- ===================== STAGE 3 · QUANTITATIVE BLOCK ===================== -->
+  <div class="stage" id="stage-quant">
+    <div class="progress-label">Paso 3 de 4 · Encuesta cuantitativa</div>
+    <div class="progress-rail"><div class="progress-fill" style="width:75%"></div></div>
+
+    <div class="section-head">
+      <div class="section-num">Sección 3</div>
+      <h2 class="section-title" id="quant-title">Sobre tu experiencia con IA</h2>
+      <p class="section-sub">5 preguntas de opción múltiple. Elige la opción que mejor refleje tu situación real.</p>
+    </div>
+
+    <!-- Quant questions injected dynamically -->
+    <div id="quant-container"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStage('filter')">← Volver</button>
+      <button class="btn btn-primary btn-arrow" onclick="validateQuant()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- ===================== STAGE 4 · CLOSING (conditional manager q) ===================== -->
+  <div class="stage" id="stage-closing">
+    <div class="progress-label">Paso 4 de 4 · Cierre</div>
+    <div class="progress-rail"><div class="progress-fill" style="width:95%"></div></div>
+
+    <div class="section-head">
+      <div class="section-num">Sección 4</div>
+      <h2 class="section-title" id="closing-title">Cierre</h2>
+      <p class="section-sub" id="closing-sub">Casi terminamos.</p>
+    </div>
+
+    <div id="closing-container"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStage('quant')">← Volver</button>
+      <button class="btn btn-accent btn-arrow" onclick="submitResponse()">Enviar respuestas</button>
+    </div>
+
+    <div class="error-banner" id="submit-error"></div>
+  </div>
+
+  <!-- ===================== STAGE 6 · COMPLETE ===================== -->
+  <div class="stage" id="stage-done">
+    <div class="complete">
+      <div class="complete-mark">✓</div>
+      <h2>Gracias por tu tiempo</h2>
+      <p>Tu respuesta quedó registrada de forma <strong>anónima</strong>. Se agregará al input del resto del equipo de Tesorería para identificar patrones, no individuos.</p>
+      <div class="complete-id" id="response-id"></div>
+      <div class="complete-footer">
+        <p style="font-size:12px; color:var(--ink-mute); margin-top:24px; max-width:480px; margin-left:auto; margin-right:auto;">
+          Estudio académico · MBA EGADE Business School · Tecnológico de Monterrey<br>
+          Los datos serán destruidos al concluir la materia (diciembre 2026).<br>
+          Ya puedes cerrar esta ventana.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+                          ADMIN VIEW
+============================================================ -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-wrap">
+
+    <!-- PIN GATE -->
+    <div id="admin-pin-gate">
+      <div class="pin-card">
+        <h3>Acceso administrador</h3>
+        <p>Ingresa el PIN para ver el repositorio de respuestas y el análisis automático.</p>
+        <input type="password" class="pin-input" id="pin-input" maxlength="6" placeholder="••••" autofocus>
+        <div class="pin-error" id="pin-error"></div>
+        <div style="display:flex; gap:10px; margin-top:18px; justify-content:center;">
+          <button class="btn btn-ghost" onclick="closeAdmin()">Cancelar</button>
+          <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="admin-dashboard" style="display:none">
+      <div class="admin-head">
+        <h2>Repositorio de respuestas · <em>Tesorería MercadoLibre</em></h2>
+        <button class="admin-close" onclick="closeAdmin()">Cerrar</button>
+      </div>
+
+      <!-- Stats overview -->
+      <div class="stats" id="stats-overview"></div>
+
+      <!-- Side-by-side comparison: Users vs Non-users -->
+      <div class="admin-section">
+        <h3>Usuarios vs No usuarios — comparativa lado a lado</h3>
+        <div class="desc">Quién es quién dentro de las respuestas recibidas. Click en cualquier ID para ver el cuestionario completo.</div>
+        <div class="vs-grid" id="vs-grid"></div>
+      </div>
+
+      <!-- Distribution -->
+      <div class="admin-section">
+        <h3>Distribución y patrones</h3>
+        <div class="desc">Adopción cruzada por nivel jerárquico, frecuencia de uso, y conocimiento auto-reportado.</div>
+        <div id="distributions"></div>
+      </div>
+
+      <!-- Export & Analysis -->
+      <div class="admin-section">
+        <h3>Exportar para análisis</h3>
+        <div class="desc">Descarga el repositorio completo y procésalo en una conversación nueva con Claude para obtener tu reporte de hallazgos.</div>
+        <div class="actions-row">
+          <button class="btn btn-accent" onclick="exportCSV()">⬇ Exportar CSV (recomendado)</button>
+          <button class="btn btn-ghost" onclick="exportJSON()">⬇ Exportar JSON</button>
+          <button class="btn btn-ghost" onclick="confirmClearData()" style="margin-left:auto; color:var(--error);">Borrar todo</button>
+        </div>
+        <div class="info-tip">
+          <strong>Cómo generar el reporte:</strong> Una vez que tengas las respuestas suficientes, descarga el CSV, abre una conversación nueva con Claude y comparte el archivo pidiendo: <em>"Analiza estas respuestas del diagnóstico de IA en Tesorería de MercadoLibre y genera hallazgos clave, segmentos críticos, hipótesis de resistencia con marcos teóricos, y preguntas a profundizar en entrevistas."</em>
+        </div>
+      </div>
+
+      <!-- Response table -->
+      <div class="admin-section">
+        <h3>Todas las respuestas individuales</h3>
+        <div class="desc">Filtra por flujo o nivel. Click en una fila para ver el detalle completo del cuestionario.</div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">Flujo:</span>
+            <button class="filter-chip active" data-filter-type="flow" data-filter-value="all">Todos</button>
+            <button class="filter-chip" data-filter-type="flow" data-filter-value="user">✓ Usan IA</button>
+            <button class="filter-chip" data-filter-type="flow" data-filter-value="nonuser">✗ No usan IA</button>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Nivel:</span>
+            <button class="filter-chip active" data-filter-type="level" data-filter-value="all">Todos</button>
+            <button class="filter-chip" data-filter-type="level" data-filter-value="Analista">Analista</button>
+            <button class="filter-chip" data-filter-type="level" data-filter-value="Senior/Lead">Senior/Lead</button>
+            <button class="filter-chip" data-filter-type="level" data-filter-value="Manager">Manager</button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="response-table" id="response-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail modal -->
+    <div class="detail-modal" id="detail-modal">
+      <div class="detail-card">
+        <div class="detail-head">
+          <div>
+            <div class="detail-id" id="detail-id"></div>
+            <div class="detail-flow-badge" id="detail-flow-badge"></div>
+          </div>
+          <button class="admin-close" onclick="closeDetailModal()">Cerrar</button>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//                    FIREBASE CONFIGURATION
+// ============================================================
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAwvvBYWc-Srl1eP-v_bNNl-Vyh_ZccuvM",
+  authDomain: "encuestas-meli-ia-2026.firebaseapp.com",
+  projectId: "encuestas-meli-ia-2026",
+  storageBucket: "encuestas-meli-ia-2026.firebasestorage.app",
+  messagingSenderId: "449160936256",
+  appId: "1:449160936256:web:f52e699f12d88755a598a5"
+};
+
+// Inicialización
+let db = null;
+let firebaseReady = false;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  firebaseReady = true;
+  console.log('✓ Firebase inicializado');
+} catch (e) {
+  console.error('✗ Error inicializando Firebase:', e);
+}
+
+const COLLECTION_NAME = 'respuestas_meli';
+
+// Helpers para Firestore
+async function fbSaveResponse(response) {
+  if (!firebaseReady) throw new Error('Firebase no está inicializado');
+  await db.collection(COLLECTION_NAME).doc(response.id).set(response);
+}
+
+async function fbGetAllResponses() {
+  if (!firebaseReady) return [];
+  const snapshot = await db.collection(COLLECTION_NAME).get();
+  return snapshot.docs.map(doc => doc.data());
+}
+
+async function fbDeleteAll() {
+  if (!firebaseReady) throw new Error('Firebase no está inicializado');
+  const snapshot = await db.collection(COLLECTION_NAME).get();
+  const batch = db.batch();
+  snapshot.docs.forEach(doc => batch.delete(doc.ref));
+  await batch.commit();
+}
+
+// ============================================================
+//                    QUESTIONNAIRE DATA
+// ============================================================
+
+const QUESTIONS_QUANT = {
+  nonuser: [
+    {
+      id: 'nu_q1',
+      text: '¿Cómo calificarías tu nivel de conocimiento sobre el uso de IA aplicada a funciones de finanzas y/o tesorería?',
+      options: [
+        { letter: 'A', value: 'A', text: 'No tengo conocimiento; no sé por dónde empezar' },
+        { letter: 'B', value: 'B', text: 'Tengo conocimiento básico pero no sé cómo aplicarlo a mis tareas específicas' },
+        { letter: 'C', value: 'C', text: 'Entiendo cómo funciona pero no me siento seguro usándola en contextos reales' },
+        { letter: 'D', value: 'D', text: 'Tengo buen conocimiento pero prefiero no depender de ella por ahora' }
+      ]
+    },
+    {
+      id: 'nu_q2',
+      text: 'Si tuvieras que identificar la razón más honesta por la que no has usado IA en tu trabajo, ¿cuál sería?',
+      options: [
+        { letter: 'A', value: 'A', text: 'Mi día a día está tan saturado que no encuentro el momento para experimentar con ella' },
+        { letter: 'B', value: 'B', text: 'No tengo claro cómo aplicarla a tareas concretas de Tesorería' },
+        { letter: 'C', value: 'C', text: 'Me preocupa que el resultado no sea tan confiable para las responsabilidades que manejo' },
+        { letter: 'D', value: 'D', text: 'No siento que aporte en mis funciones o no me siento motivado para usarla' }
+      ]
+    },
+    {
+      id: 'nu_q3',
+      text: 'Imagina que un compañero de tu mismo nivel entrega un análisis financiero construido principalmente con ayuda de IA. ¿Cuál sería tu reacción más honesta?',
+      options: [
+        { letter: 'A', value: 'A', text: 'Lo vería como un trabajo menos riguroso o confiable que uno hecho manualmente' },
+        { letter: 'B', value: 'B', text: 'Me parecería válido si el resultado es correcto, aunque yo personalmente preferiría hacerlo yo mismo' },
+        { letter: 'C', value: 'C', text: 'Lo vería como algo positivo; es inteligente aprovechar las herramientas disponibles' },
+        { letter: 'D', value: 'D', text: 'Me generaría curiosidad y ganas de aprender cómo lo hizo' }
+      ]
+    },
+    {
+      id: 'nu_q4',
+      text: 'En tu equipo, ¿cómo percibes que se valora el uso de IA en el día a día?',
+      options: [
+        { letter: 'A', value: 'A', text: 'No se habla del tema; cada quien hace lo que quiere sin que haya una posición clara' },
+        { letter: 'B', value: 'B', text: 'Se percibe como algo positivo en teoría, pero en la práctica nadie lo usa ni lo reconoce' },
+        { letter: 'C', value: 'C', text: 'Hay una expectativa implícita de que el trabajo "de calidad" se hace de forma manual y con criterio propio' },
+        { letter: 'D', value: 'D', text: 'El equipo y el liderazgo lo impulsan activamente y hay ejemplos concretos de uso que se comparten' }
+      ]
+    },
+    {
+      id: 'nu_q5',
+      text: 'Cuando piensas en la comunicación que has recibido sobre el uso de IA en tu área o en MercadoLibre, ¿cuál frase describe mejor cómo lo has interpretado?',
+      options: [
+        { letter: 'A', value: 'A', text: 'La empresa quiere que usemos IA para ser más eficientes y hacer más con menos recursos' },
+        { letter: 'B', value: 'B', text: 'No tengo muy claro cuál es el objetivo; no he recibido suficiente información al respecto' },
+        { letter: 'C', value: 'C', text: 'La IA es una herramienta para que yo pueda hacer un trabajo más estratégico y de mayor valor' },
+        { letter: 'D', value: 'D', text: 'Es una iniciativa corporativa importante, pero no siento que esté conectada con mi trabajo real' }
+      ]
+    }
+  ],
+  user: [
+    {
+      id: 'u_q1',
+      text: '¿Cuál describe mejor la forma en que has usado IA en tu trabajo?',
+      options: [
+        { letter: 'A', value: 'A', text: 'La he usado principalmente para tareas básicas: redactar correos, resumir documentos o buscar información general' },
+        { letter: 'B', value: 'B', text: 'La he aplicado a tareas financieras concretas como reportes, presentaciones, etc.' },
+        { letter: 'C', value: 'C', text: 'La uso de forma avanzada: diseño prompts específicos para Tesorería' },
+        { letter: 'D', value: 'D', text: 'La uso porque se espera que lo haga, pero no siento que me haya aportado un valor real' }
+      ]
+    },
+    {
+      id: 'u_q2',
+      text: '¿Qué te llevó principalmente a empezar a usar IA en tu trabajo?',
+      options: [
+        { letter: 'A', value: 'A', text: 'Una instrucción o expectativa explícita de mi jefe o de la empresa' },
+        { letter: 'B', value: 'B', text: 'La curiosidad personal y las ganas de experimentar con algo nuevo' },
+        { letter: 'C', value: 'C', text: 'Ver a un compañero usarla y obtener resultados que me parecieron útiles' },
+        { letter: 'D', value: 'D', text: 'Una necesidad concreta: tenía un problema en mi trabajo que la IA podía resolver mejor que otras alternativas' }
+      ]
+    },
+    {
+      id: 'u_q3',
+      text: '¿En qué medida sientes que el uso de IA ha cambiado la calidad o velocidad de tu trabajo en Tesorería?',
+      options: [
+        { letter: 'A', value: 'A', text: 'No he notado un cambio significativo todavía' },
+        { letter: 'B', value: 'B', text: 'Me ha ahorrado tiempo en tareas puntuales pero no ha cambiado la forma en que trabajo en general' },
+        { letter: 'C', value: 'C', text: 'Ha mejorado concretamente mi productividad en al menos una o dos tareas que hago regularmente' },
+        { letter: 'D', value: 'D', text: 'Ha transformado cómo abordo mi trabajo; me permite hacer análisis que antes no tenía tiempo de hacer' }
+      ]
+    },
+    {
+      id: 'u_q4',
+      text: 'Cuando vas a usar IA para una tarea de Tesorería que involucra datos financieros o reportes que van a dirección, ¿qué tan claro tienes qué está permitido?',
+      options: [
+        { letter: 'A', value: 'A', text: 'No existe ninguna guía o política; uso mi propio criterio' },
+        { letter: 'B', value: 'B', text: 'Hay algunas indicaciones generales pero no son específicas para el tipo de trabajo que hago en Tesorería' },
+        { letter: 'C', value: 'C', text: 'Tengo claro qué puedo y qué no puedo usar con datos sensibles; hay políticas definidas que conozco' },
+        { letter: 'D', value: 'D', text: 'Prefiero no usar IA en tareas críticas por precaución, aunque no hay una restricción formal que lo impida' }
+      ]
+    },
+    {
+      id: 'u_q5',
+      text: 'Si en los próximos 6 meses dominaras completamente las herramientas de IA disponibles, ¿qué cambiarías primero en tu trabajo?',
+      options: [
+        { letter: 'A', value: 'A', text: 'Automatizaría o aceleraría tareas operativas que hoy me consumen tiempo' },
+        { letter: 'B', value: 'B', text: 'Mejoraría la calidad de mis análisis' },
+        { letter: 'C', value: 'C', text: 'Liberaría tiempo para pensar más estratégicamente' },
+        { letter: 'D', value: 'D', text: 'Honestamente no lo sé; aún no visualizo cómo la IA podría transformar mi trabajo de forma significativa' }
+      ]
+    }
+  ]
+};
+
+// ============================================================
+//                       STATE & FLOW
+// ============================================================
+
+const ADMIN_PIN = 'meli2026'; // 🔧 Cambia este PIN antes de compartir el link
+
+let currentFlow = null; // 'user' or 'nonuser'
+let currentResponse = {};
+
+function goToStage(name) {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  document.getElementById('stage-' + name).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateConsentButton() {
+  const checkbox = document.getElementById('consent-checkbox');
+  const btn = document.getElementById('consent-continue-btn');
+  btn.disabled = !checkbox.checked;
+}
+
+function showToast(msg, duration = 2400) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// Validation: demographics
+function validateDemo() {
+  const yearsM = document.getElementById('d_years_meli').value;
+  const yearsT = document.getElementById('d_years_treasury').value;
+  const level = document.querySelector('input[name="d_level"]:checked');
+  if (!yearsM || !yearsT || !level) {
+    showToast('Completa los 3 campos para continuar');
+    return;
+  }
+  currentResponse.years_meli = parseInt(yearsM);
+  currentResponse.years_treasury = parseInt(yearsT);
+  currentResponse.level = level.value;
+  goToStage('filter');
+}
+
+// Validation: filter + knowledge
+function validateFilter() {
+  const k = document.querySelector('input[name="q_knowledge"]:checked');
+  const f = document.querySelector('input[name="q_filter"]:checked');
+  if (!k || !f) {
+    showToast('Responde ambas preguntas para continuar');
+    return;
+  }
+  currentResponse.knowledge_rank = parseInt(k.value);
+  currentResponse.filter_answer = f.value;
+  currentFlow = f.dataset.flow; // 'user' or 'nonuser'
+  currentResponse.flow = currentFlow;
+  renderQuant();
+  renderClosing();
+  goToStage('quant');
+}
+
+// Render quantitative block based on flow
+function renderQuant() {
+  const container = document.getElementById('quant-container');
+  const title = document.getElementById('quant-title');
+  const set = QUESTIONS_QUANT[currentFlow];
+  title.textContent = currentFlow === 'user'
+    ? 'Sobre cómo estás usando IA hoy'
+    : 'Sobre tu relación con IA hasta ahora';
+  container.innerHTML = '';
+  set.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    let html = `<div class="q-tag required">Pregunta ${idx+1} <span class="req-mark">*</span></div>
+                <div class="q-text">${q.text}</div>
+                <div class="options">`;
+    q.options.forEach(opt => {
+      html += `<label class="option">
+                 <input type="radio" name="${q.id}" value="${opt.value}" data-qid="${q.id}">
+                 <span class="option-label"><span class="option-letter">${opt.letter}</span><span>${opt.text}</span></span>
+               </label>`;
+    });
+    html += `</div>`;
+    card.innerHTML = html;
+    container.appendChild(card);
+    card.querySelectorAll(`input[name="${q.id}"]`).forEach(input => {
+      input.addEventListener('change', () => card.classList.add('answered'));
+    });
+  });
+}
+
+function validateQuant() {
+  const set = QUESTIONS_QUANT[currentFlow];
+  const answers = {};
+  for (const q of set) {
+    const sel = document.querySelector(`input[name="${q.id}"]:checked`);
+    if (!sel) {
+      showToast(`Falta responder: pregunta ${set.indexOf(q)+1}`);
+      return;
+    }
+    answers[q.id] = sel.value;
+  }
+  currentResponse.quant = answers;
+  goToStage('closing');
+}
+
+// Render closing block (conditional manager extra question)
+function renderClosing() {
+  const container = document.getElementById('closing-container');
+  const closingTitle = document.getElementById('closing-title');
+  const closingSub = document.getElementById('closing-sub');
+  container.innerHTML = '';
+  closingTitle.textContent = 'Casi terminamos';
+  closingSub.textContent = 'Cuando estés listo, envía tus respuestas.';
+  const card = document.createElement('div');
+  card.className = 'q-card';
+  card.innerHTML = `<div class="q-tag">Cierre</div>
+                    <div class="q-text" style="font-size:16px; font-style:italic;">Si llegaste hasta aquí, gracias. Tu input alimenta directamente el diagnóstico que estamos construyendo. Las preguntas a profundidad las exploraremos en entrevistas con un grupo más reducido.</div>`;
+  container.appendChild(card);
+}
+
+// Submit
+let isSubmitting = false; // anti doble-envío
+
+async function submitResponse() {
+  if (isSubmitting) return;
+  isSubmitting = true;
+
+  // UI: deshabilitar botón y mostrar loading
+  const submitBtn = document.querySelector('#stage-closing .btn-accent');
+  const errorBanner = document.getElementById('submit-error');
+  errorBanner.classList.remove('visible');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading-spinner"></span>Guardando respuesta...';
+  }
+
+  currentResponse.timestamp = new Date().toISOString();
+  currentResponse.id = 'R' + Date.now().toString(36).toUpperCase().slice(-6) + Math.floor(Math.random()*100);
+
+  try {
+    if (!firebaseReady) {
+      throw new Error('No hay conexión con la base de datos. Verifica tu internet e intenta nuevamente.');
+    }
+    await fbSaveResponse(currentResponse);
+    document.getElementById('response-id').textContent = 'ID de respuesta: ' + currentResponse.id;
+    goToStage('done');
+  } catch (e) {
+    console.error('Error al guardar:', e);
+    errorBanner.textContent = '⚠ ' + (e.message || 'Hubo un problema guardando tu respuesta. Por favor intenta de nuevo en unos segundos.');
+    errorBanner.classList.add('visible');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Reintentar envío';
+    }
+    isSubmitting = false;
+  }
+}
+
+// ============================================================
+//                       ADMIN VIEW
+// ============================================================
+
+function openAdminPin() {
+  document.getElementById('admin-overlay').classList.add('active');
+  document.getElementById('admin-pin-gate').style.display = 'block';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('admin-pin-gate').style.display !== 'none' && document.getElementById('admin-overlay').classList.contains('active')) {
+    checkPin();
+  }
+});
+
+function checkPin() {
+  const pin = document.getElementById('pin-input').value;
+  if (pin === ADMIN_PIN) {
+    document.getElementById('admin-pin-gate').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    loadDashboard();
+  } else {
+    document.getElementById('pin-error').textContent = 'PIN incorrecto';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+// Global state for filters
+let dashboardData = [];
+let activeFilters = { flow: 'all', level: 'all' };
+
+async function loadDashboard() {
+  let data = [];
+  try {
+    data = await fbGetAllResponses();
+    // Ordenar por timestamp descendente
+    data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  } catch (e) {
+    console.error('Error cargando dashboard:', e);
+    showToast('Error cargando datos. Verifica tu conexión.');
+    data = [];
+  }
+  dashboardData = data;
+  renderStats(data);
+  renderVsGrid(data);
+  renderDistributions(data);
+  renderTable(data);
+  hookFilterChips();
+}
+
+function renderStats(data) {
+  const container = document.getElementById('stats-overview');
+  const total = data.length;
+  const users = data.filter(d => d.flow === 'user').length;
+  const nonusers = data.filter(d => d.flow === 'nonuser').length;
+  const avgKnowledge = total > 0
+    ? (data.reduce((s, d) => s + (d.knowledge_rank || 0), 0) / total).toFixed(1)
+    : '—';
+  const adoptionRate = total > 0 ? Math.round((users / total) * 100) : 0;
+
+  container.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Respuestas totales</div>
+      <div class="stat-value">${total}</div>
+      <div class="stat-sub">${total >= 20 ? '✓ Meta alcanzada' : 'Meta: 20'}</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(45,106,79,.3); background: linear-gradient(180deg, rgba(45,106,79,.04) 0%, var(--bg-card) 100%);">
+      <div class="stat-label" style="color: var(--success);">✓ Sí usan IA</div>
+      <div class="stat-value">${users}</div>
+      <div class="stat-sub">${adoptionRate}% del total</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(139,44,44,.25); background: linear-gradient(180deg, rgba(139,44,44,.03) 0%, var(--bg-card) 100%);">
+      <div class="stat-label" style="color: var(--error);">✗ No usan IA</div>
+      <div class="stat-value">${nonusers}</div>
+      <div class="stat-sub">${total > 0 ? Math.round((nonusers/total)*100) : 0}% del total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Conocimiento promedio</div>
+      <div class="stat-value">${avgKnowledge}</div>
+      <div class="stat-sub">Escala 1–5</div>
+    </div>
+  `;
+}
+
+function renderVsGrid(data) {
+  const container = document.getElementById('vs-grid');
+  const users = data.filter(d => d.flow === 'user');
+  const nonusers = data.filter(d => d.flow === 'nonuser');
+
+  function buildList(items) {
+    if (items.length === 0) return '<div class="vs-empty">Aún sin respuestas en esta categoría.</div>';
+    return '<div class="vs-list">' + items.map(d => {
+      const date = new Date(d.timestamp).toLocaleDateString('es-MX', { day:'2-digit', month:'short' });
+      return `<div class="vs-item" onclick="showResponseDetail('${d.id}')">
+                <div>
+                  <span class="vs-id">${d.id}</span>
+                  <span class="vs-meta"> · ${d.level} · ${d.years_treasury}y tes.</span>
+                </div>
+                <span class="vs-meta">${date} · K${d.knowledge_rank}/5 · F:${d.filter_answer}</span>
+              </div>`;
+    }).join('') + '</div>';
+  }
+
+  container.innerHTML = `
+    <div class="vs-col users-col">
+      <div class="vs-header">
+        <span class="vs-icon">SÍ usan IA</span>
+        <span class="vs-count">${users.length}</span>
+      </div>
+      ${buildList(users)}
+    </div>
+    <div class="vs-col nonusers-col">
+      <div class="vs-header">
+        <span class="vs-icon">NO usan IA</span>
+        <span class="vs-count">${nonusers.length}</span>
+      </div>
+      ${buildList(nonusers)}
+    </div>
+  `;
+}
+
+function renderDistributions(data) {
+  const container = document.getElementById('distributions');
+  if (data.length === 0) {
+    container.innerHTML = '<div style="color:var(--ink-mute); font-size:13px; padding:8px 0;">Sin respuestas todavía.</div>';
+    return;
+  }
+  const byLevel = {};
+  data.forEach(d => {
+    const k = d.level || 'Sin nivel';
+    byLevel[k] = byLevel[k] || { total: 0, users: 0 };
+    byLevel[k].total++;
+    if (d.flow === 'user') byLevel[k].users++;
+  });
+
+  let html = '<div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); margin-bottom:10px;">Adopción por nivel jerárquico</div>';
+  Object.entries(byLevel).forEach(([level, stats]) => {
+    const pct = Math.round((stats.users / stats.total) * 100);
+    html += `<div class="dist-row">
+               <div>${level}</div>
+               <div class="dist-bar"><div class="dist-fill" style="width:${pct}%"></div></div>
+               <div class="dist-count">${stats.users}/${stats.total} usan</div>
+             </div>`;
+  });
+
+  // By filter answer
+  const byFilter = { A: 0, B: 0, C: 0, D: 0 };
+  data.forEach(d => { if (d.filter_answer) byFilter[d.filter_answer]++; });
+  html += '<div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); margin:18px 0 10px;">Frecuencia de uso reportada</div>';
+  const filterLabels = {
+    A: '✗ Nunca las ha usado',
+    B: '✗ Intentó pero no logró aplicarlas',
+    C: '✓ Uso ocasional (1-2/mes)',
+    D: '✓ Uso regular (semanal+)'
+  };
+  Object.entries(byFilter).forEach(([k, v]) => {
+    const pct = data.length > 0 ? Math.round((v / data.length) * 100) : 0;
+    html += `<div class="dist-row">
+               <div>${filterLabels[k]}</div>
+               <div class="dist-bar"><div class="dist-fill" style="width:${pct}%"></div></div>
+               <div class="dist-count">${v} (${pct}%)</div>
+             </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function hookFilterChips() {
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.onclick = () => {
+      const type = chip.dataset.filterType;
+      const value = chip.dataset.filterValue;
+      // Toggle active in same group
+      document.querySelectorAll(`.filter-chip[data-filter-type="${type}"]`).forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeFilters[type] = value;
+      const filtered = applyFilters(dashboardData);
+      renderTable(filtered);
+    };
+  });
+}
+
+function applyFilters(data) {
+  return data.filter(d => {
+    if (activeFilters.flow !== 'all' && d.flow !== activeFilters.flow) return false;
+    if (activeFilters.level !== 'all' && d.level !== activeFilters.level) return false;
+    return true;
+  });
+}
+
+function renderTable(data) {
+  const table = document.getElementById('response-table');
+  if (data.length === 0) {
+    table.innerHTML = '<tr><td style="text-align:center; color:var(--ink-mute); padding:20px;">Sin respuestas que coincidan con los filtros.</td></tr>';
+    return;
+  }
+  let html = `<thead><tr>
+    <th>ID</th><th>Fecha</th><th>Nivel</th><th>Años MELI</th><th>Años Tes.</th>
+    <th>Conoc.</th><th>Filtro</th><th>¿Usa IA?</th>
+  </tr></thead><tbody>`;
+  data.slice().reverse().forEach(d => {
+    const date = new Date(d.timestamp).toLocaleDateString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    const flowLabel = d.flow === 'user' ? '✓ Sí' : '✗ No';
+    html += `<tr onclick="showResponseDetail('${d.id}')" style="cursor:pointer">
+      <td><strong>${d.id}</strong></td>
+      <td>${date}</td>
+      <td>${d.level}</td>
+      <td>${d.years_meli}</td>
+      <td>${d.years_treasury}</td>
+      <td>${d.knowledge_rank}/5</td>
+      <td>${d.filter_answer}</td>
+      <td><span class="badge ${d.flow}">${flowLabel}</span></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+async function showResponseDetail(id) {
+  const r = dashboardData.find(d => d.id === id);
+  if (!r) return;
+
+  // Build flow badge text
+  const flowText = r.flow === 'user' ? '✓ SÍ usa IA · Flujo Usuario' : '✗ NO usa IA · Flujo No-usuario';
+  document.getElementById('detail-id').textContent = r.id;
+  const badge = document.getElementById('detail-flow-badge');
+  badge.textContent = flowText;
+  badge.className = 'detail-flow-badge ' + r.flow;
+
+  // Build body
+  const body = document.getElementById('detail-body');
+  let html = '';
+
+  // Demographics
+  html += `<div class="detail-section">
+    <h4>Datos demográficos</h4>
+    <div class="detail-meta-grid">
+      <div class="detail-meta-item"><div class="label">Nivel</div><div class="value">${r.level}</div></div>
+      <div class="detail-meta-item"><div class="label">Años en MELI</div><div class="value">${r.years_meli}</div></div>
+      <div class="detail-meta-item"><div class="label">Años en Tesorería</div><div class="value">${r.years_treasury}</div></div>
+      <div class="detail-meta-item"><div class="label">Conoc. auto-rep.</div><div class="value">${r.knowledge_rank}/5</div></div>
+    </div>
+  </div>`;
+
+  // Filter question
+  const filterLabels = {
+    A: 'Nunca las he usado',
+    B: 'Las he intentado usar pero no logré aplicarlas',
+    C: 'Las uso ocasionalmente (1-2 veces al mes)',
+    D: 'Las uso regularmente (al menos una vez por semana)'
+  };
+  html += `<div class="detail-section">
+    <h4>Pregunta filtro · Frecuencia de uso</h4>
+    <div class="detail-q">
+      <div class="detail-q-text">¿Con qué frecuencia has utilizado herramientas de IA generativa (Claude/Gemini) durante el último mes?</div>
+      <div class="detail-q-answer">(${r.filter_answer}) ${filterLabels[r.filter_answer]}</div>
+    </div>
+  </div>`;
+
+  // Quantitative answers
+  const qSet = QUESTIONS_QUANT[r.flow] || [];
+  html += `<div class="detail-section">
+    <h4>Bloque cuantitativo · ${r.flow === 'user' ? 'Preguntas para quienes SÍ usan IA' : 'Preguntas para quienes NO usan IA'}</h4>`;
+  qSet.forEach((q, idx) => {
+    const ans = r.quant ? r.quant[q.id] : null;
+    const ansText = ans ? q.options.find(o => o.value === ans)?.text : null;
+    html += `<div class="detail-q">
+      <div class="detail-q-text"><strong>P${idx+1}.</strong> ${q.text}</div>
+      ${ans ? `<div class="detail-q-answer">(${ans}) ${ansText}</div>` : '<div class="detail-q-answer empty">Sin respuesta</div>'}
+    </div>`;
+  });
+  html += `</div>`;
+
+  body.innerHTML = html;
+  document.getElementById('detail-modal').classList.add('active');
+}
+
+function closeDetailModal() {
+  document.getElementById('detail-modal').classList.remove('active');
+}
+
+// Close modal on escape or backdrop click
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('detail-modal').classList.contains('active')) {
+    closeDetailModal();
+  }
+});
+document.addEventListener('click', e => {
+  const modal = document.getElementById('detail-modal');
+  if (e.target === modal) closeDetailModal();
+});
+
+// ============================================================
+//                    EXPORT FUNCTIONS
+// ============================================================
+
+async function exportCSV() {
+  let data = [];
+  try {
+    data = await fbGetAllResponses();
+    data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  } catch (e) {
+    showToast('Error al cargar datos');
+    return;
+  }
+  if (data.length === 0) { showToast('Sin datos para exportar'); return; }
+
+  const headers = [
+    'id','timestamp','years_meli','years_treasury','level','knowledge_rank','filter_answer','flow',
+    'q1','q2','q3','q4','q5'
+  ];
+  const rows = data.map(d => {
+    const flow = d.flow;
+    const qSet = QUESTIONS_QUANT[flow] || [];
+    const quant = d.quant || {};
+    return [
+      d.id, d.timestamp, d.years_meli, d.years_treasury, d.level, d.knowledge_rank, d.filter_answer, flow,
+      quant[qSet[0]?.id] || '',
+      quant[qSet[1]?.id] || '',
+      quant[qSet[2]?.id] || '',
+      quant[qSet[3]?.id] || '',
+      quant[qSet[4]?.id] || ''
+    ].map(v => {
+      const s = String(v || '').replace(/"/g, '""');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+    }).join(',');
+  });
+  const csv = headers.join(',') + '\n' + rows.join('\n');
+  const stamp = new Date().toISOString().slice(0,10);
+  download(`respuestas_tesoreria_meli_${stamp}.csv`, csv, 'text/csv;charset=utf-8;');
+  showToast('CSV exportado · ' + data.length + ' respuestas');
+}
+
+async function exportJSON() {
+  let data = [];
+  try {
+    data = await fbGetAllResponses();
+  } catch (e) {
+    showToast('Error al cargar datos');
+    return;
+  }
+  if (data.length === 0) { showToast('Sin datos para exportar'); return; }
+  const stamp = new Date().toISOString().slice(0,10);
+  download(`respuestas_tesoreria_meli_${stamp}.json`, JSON.stringify(data, null, 2), 'application/json');
+  showToast('JSON exportado · ' + data.length + ' respuestas');
+}
+
+function download(filename, content, mime) {
+  const blob = new Blob(['\uFEFF' + content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function confirmClearData() {
+  if (!confirm('¿Estás seguro de borrar TODAS las respuestas? Esta acción NO se puede deshacer.')) return;
+  if (!confirm('Última confirmación: ¿borrar definitivamente todos los datos de Firebase?')) return;
+  try {
+    await fbDeleteAll();
+    showToast('Datos eliminados de Firebase');
+    loadDashboard();
+  } catch (e) {
+    console.error(e);
+    showToast('Error al borrar: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
